@@ -40,7 +40,7 @@ class ClientSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.User
-        fields = ['username', 'email', 'password', 'password2']
+        fields = ['username','first_name', 'last_name', 'email', 'password', 'password2']
         # extra_kwargs = {
         #     'password':{'write_only':True}
         # }
