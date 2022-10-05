@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from . import models
-from .models import Admin, Client
+from .models import Admin, Client, NextOfKin
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -20,7 +20,9 @@ class AdminSerializer(serializers.ModelSerializer):
     def save(self, **kwargs):
         user = models.User(
             username=self.validated_data['username'],
-            email=self.validated_data['email']
+            email=self.validated_data['email'],
+            first_name=self.validated_data['first_name'],
+            last_name=self.validated_data['last_name'],
         )
         password = self.validated_data['password']
         password2 = self.validated_data['password2']
@@ -48,7 +50,9 @@ class ClientSerializer(serializers.ModelSerializer):
     def save(self, **kwargs):
         user = models.User(
             username=self.validated_data['username'],
-            email=self.validated_data['email']
+            email=self.validated_data['email'],
+            first_name=self.validated_data['first_name'],
+            last_name=self.validated_data['last_name'],
         )
         password = self.validated_data['password']
         password2 = self.validated_data['password2']

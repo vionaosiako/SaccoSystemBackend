@@ -11,6 +11,12 @@ from django.conf import settings
 class User(AbstractUser):
     is_staff = models.BooleanField(default=False)
     is_client = models.BooleanField(default=False)
+    othername = models.CharField(max_length=100,blank=True,null=True)
+    gender = models.CharField(max_length=15,blank=True,null=True)
+    residential_area = models.CharField(max_length=100,blank=True,null=True)
+    national_id = models.CharField(max_length=15,blank=True,null=True)
+    date_of_birth = models.DateField(blank=True,null=True)
+    phone_number = models.CharField(max_length=15,blank=True,null=True)
 
     def __str__(self):
         return str(self.username)
@@ -34,3 +40,18 @@ class Client(models.Model):
 
     def __str__(self):
         return str(self.user.username)
+
+class NextOfKin(models.Model):
+    surname = models.CharField(max_length=100)
+    first_name = models.CharField(max_length=100)
+    othername = models.CharField(max_length=100)
+    gender = models.CharField(max_length=100)
+    national_id = models.IntegerField(blank=True, null=True)
+    date_of_birth = models.DateField()
+    phone_number = models.CharField(max_length=15)
+    email = models.EmailField()
+    percentage = models.FloatField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='nextofkin')
+    
+    def __str__(self):
+        return self.surname
