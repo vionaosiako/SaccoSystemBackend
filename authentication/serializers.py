@@ -15,7 +15,7 @@ class AdminSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.User
-        fields = ['username', 'first_name', 'last_name','email', 'password', 'password2']
+        fields = ['username', 'first_name', 'last_name','othername','gender','residential_area','national_id','date_of_birth','phone_number','email', 'password', 'password2']
 
     def save(self, **kwargs):
         user = models.User(
@@ -23,6 +23,13 @@ class AdminSerializer(serializers.ModelSerializer):
             email=self.validated_data['email'],
             first_name=self.validated_data['first_name'],
             last_name=self.validated_data['last_name'],
+            othername=self.validated_data['othername'],
+            gender=self.validated_data['gender'],
+            phone_number=self.validated_data['phone_number'],
+            residential_area=self.validated_data['residential_area'],
+            national_id=self.validated_data['national_id'],
+            date_of_birth=self.validated_data['date_of_birth'],
+            
         )
         password = self.validated_data['password']
         password2 = self.validated_data['password2']
@@ -42,7 +49,9 @@ class ClientSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.User
-        fields = ['username','first_name', 'last_name', 'email', 'password', 'password2']
+        # fields = ['username','first_name', 'last_name', 'email', 'password', 'password2']
+        fields = ['username', 'first_name', 'last_name','othername','gender','residential_area','national_id','date_of_birth','phone_number','email', 'password', 'password2']
+
         # extra_kwargs = {
         #     'password':{'write_only':True}
         # }
@@ -53,6 +62,12 @@ class ClientSerializer(serializers.ModelSerializer):
             email=self.validated_data['email'],
             first_name=self.validated_data['first_name'],
             last_name=self.validated_data['last_name'],
+            othername=self.validated_data['othername'],
+            gender=self.validated_data['gender'],
+            phone_number=self.validated_data['phone_number'],
+            residential_area=self.validated_data['residential_area'],
+            national_id=self.validated_data['national_id'],
+            date_of_birth=self.validated_data['date_of_birth'],
         )
         password = self.validated_data['password']
         password2 = self.validated_data['password2']
