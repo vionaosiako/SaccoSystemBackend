@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'authentication',
-    'members',
+    'contributions',
     'corsheaders',
     'rest_framework',
     'rest_framework.authtoken',    
@@ -85,7 +85,7 @@ WSGI_APPLICATION = 'SaccoProject.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'harmonysistersdatabase',
+        'NAME': 'harmonysister',
         'USER': 'riziki',
         'PASSWORD':'riziki',
     }

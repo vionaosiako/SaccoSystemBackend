@@ -5,19 +5,20 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.conf import settings
 from datetime import date
+from random import choice
 # from cloudinary.models import CloudinaryField
-
 
 # Create your models here.
 class User(AbstractUser):
+    reg_number = models.IntegerField(primary_key=True)
     is_staff = models.BooleanField(default=False)
     is_client = models.BooleanField(default=False)
-    othername = models.CharField(max_length=100,blank=True,null=True)
-    gender = models.CharField(max_length=15,blank=True,null=True)
-    residential_area = models.CharField(max_length=100,blank=True,null=True)
-    national_id = models.CharField(max_length=15,blank=True,null=True)
-    date_of_birth = models.DateField(blank=True,null=True)
-    phone_number = models.CharField(max_length=15,blank=True,null=True)
+    othername = models.CharField(max_length=100)
+    gender = models.CharField(max_length=15)
+    residential_area = models.CharField(max_length=100)
+    national_id = models.CharField(max_length=15)
+    date_of_birth = models.DateField(blank=True)
+    phone_number = models.CharField(max_length=15)
     date_joined = models.DateTimeField(auto_now_add=True)
 
     class Meta:
