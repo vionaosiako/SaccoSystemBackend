@@ -4,6 +4,9 @@ User = get_user_model()
 
 #Create your models here.
 class MonthlyContribution(models.Model):
-    receipt_ID = models.CharField(max_length=5)
+    receipt_ID = models.AutoField(primary_key=True)
     reg_number =  models.ForeignKey(User, on_delete=models.CASCADE)
     Amount = models.IntegerField(default=0)
+    
+    def __str__(self):
+        return str(self.reg_number)

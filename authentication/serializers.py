@@ -15,10 +15,11 @@ class AdminSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.User
-        fields = ['username', 'first_name', 'last_name','othername','gender','residential_area','national_id','date_of_birth','phone_number','email', 'password', 'password2']
+        fields = ['id','username', 'first_name', 'last_name','othername','gender','residential_area','national_id','date_of_birth','phone_number','email', 'password', 'password2','date_joined']
 
     def save(self, **kwargs):
         user = models.User(
+            # reg_number=self.validated_data['reg_number'],
             username=self.validated_data['username'],
             email=self.validated_data['email'],
             first_name=self.validated_data['first_name'],
@@ -29,7 +30,6 @@ class AdminSerializer(serializers.ModelSerializer):
             residential_area=self.validated_data['residential_area'],
             national_id=self.validated_data['national_id'],
             date_of_birth=self.validated_data['date_of_birth'],
-            
         )
         password = self.validated_data['password']
         password2 = self.validated_data['password2']
@@ -50,7 +50,7 @@ class ClientSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.User
         # fields = ['username','first_name', 'last_name', 'email', 'password', 'password2']
-        fields = ['username', 'first_name', 'last_name','othername','gender','residential_area','national_id','date_of_birth','phone_number','email', 'password', 'password2']
+        fields = ['id','username', 'first_name', 'last_name','othername','gender','residential_area','national_id','date_of_birth','phone_number','email', 'password', 'password2','date_joined']
 
         # extra_kwargs = {
         #     'password':{'write_only':True}
