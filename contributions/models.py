@@ -13,7 +13,7 @@ class MonthlyContribution(models.Model):
         return str(self.reg_number)
 
 class MerryGoRoundContribution(models.Model):
-    receipt_ID = models.AutoField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     reg_number =  models.ForeignKey(User, on_delete=models.CASCADE)
     Amount = models.IntegerField(default=0)
     date_joined = models.DateTimeField(auto_now_add=True,null=True,blank=True)
