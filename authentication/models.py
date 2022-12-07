@@ -13,7 +13,7 @@ class User(AbstractUser):
     id = models.AutoField(primary_key=True)
     is_staff = models.BooleanField(default=False)
     is_client = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
+    # is_active = models.BooleanField(default=True)
     othername = models.CharField(max_length=100)
     gender = models.CharField(max_length=15)
     residential_area = models.CharField(max_length=100)
