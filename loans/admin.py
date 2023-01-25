@@ -3,5 +3,5 @@ from .models import *
 
 # Register your models here.
 admin.site.register(LoanRequest),
-admin.site.register(LoanPayment)
-
+admin.site.register(LoanPayment),
+admin.site.register(LoanCategory),
