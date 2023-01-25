@@ -23,6 +23,7 @@ class LoanRequest(models.Model):
     amount_requested = models.IntegerField(default=0)
     purpose = models.TextField(null=True,blank=True)
     status = models.TextField(choices=STATUS, blank=False, default='Pending')
+    payment_period_years = models.PositiveIntegerField(default=1)
     date_requested = models.DateField(auto_now_add=True,null=True,blank=True)
     
     def __str__(self):
@@ -47,3 +48,11 @@ class LoanPayment(models.Model):
         if not self.payment_id:
             self.payment_id = get_random_string(length=6, allowed_chars='123456')
         return super(LoanPayment, self).save(*args,**kwargs)
+
+class CustomerLoan(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='loan_user')
+    total_loan = models.PositiveIntegerField(default=0)
+    payable_loan = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return self.user.username

@@ -130,3 +130,42 @@ def getLoanPaymentDetails(request,id):
 #-------------------------------------------------------------------------------------------------------------------------------------
 #Loan Process
 #-------------------------------------------------------------------------------------------------------------------------------------
+def approved_request(request, id):
+    today = date.today()
+    status_date = today.strftime("%B %d, %Y")
+    loan_obj = loanRequest.objects.get(id=id)
+    loan_obj.status_date = status_date
+    loan_obj.save()
+    year = loan_obj.year
+
+    approved_customer = loanRequest.objects.get(id=id).customer
+    if CustomerLoan.objects.filter(customer=approved_customer).exists():
+
+        # find previous amount of customer
+        PreviousAmount = CustomerLoan.objects.get(
+            customer=approved_customer).total_loan
+        PreviousPayable = CustomerLoan.objects.get(
+            customer=approved_customer).payable_loan
+
+        # update balance
+        CustomerLoan.objects.filter(
+            customer=approved_customer).update(total_loan=int(PreviousAmount)+int(loan_obj.amount))
+        CustomerLoan.objects.filter(
+            customer=approved_customer).update(payable_loan=int(PreviousPayable)+int(loan_obj.amount)+int(loan_obj.amount)*0.12*int(year))
+
+    else:
+
+        # request customer
+
+        # CustomerLoan object create
+        save_loan = CustomerLoan()
+
+        save_loan.customer = approved_customer
+        save_loan.total_loan = int(loan_obj.amount)
+        save_loan.payable_loan = int(
+            loan_obj.amount)+int(loan_obj.amount)*0.12*int(year)
+        save_loan.save()
+
+    loanRequest.objects.filter(id=id).update(status='approved')
+    loanrequest = loanRequest.objects.filter(status='pending')
+    return render(request, 'admin/request_user.html', context={'loanrequest': loanrequest})
