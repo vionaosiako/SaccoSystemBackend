@@ -4,15 +4,15 @@ from .models import *
 
 class LoanCategorySerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.LoanCategory
+        model = LoanCategory
         fields = '__all__'
 
 class LoanRequestSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.LoanRequest
+        model = LoanRequest
         fields = '__all__'
 
 class LoanPaymentSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.LoanPayment
+        model = LoanPayment
         fields = '__all__'
