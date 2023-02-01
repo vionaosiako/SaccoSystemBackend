@@ -2,7 +2,11 @@ from django.db import models
 from django.contrib.auth import get_user_model
 User = get_user_model()
 from django.utils.crypto import get_random_string
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
 # Create your models here.
+
 STATUS =(
     ("Approved", "Approved"),
     ("Rejected", "Rejected"),
@@ -16,6 +20,7 @@ class LoanCategory(models.Model):
 
     def __str__(self):
         return self.loan_name
+    
 class LoanRequest(models.Model):
     id =models.CharField(max_length=6, primary_key = True, editable=False, unique=True)
     user =  models.ForeignKey(User, on_delete=models.CASCADE)
@@ -58,3 +63,13 @@ class CustomerLoan(models.Model):
 
     def __str__(self):
         return self.user.username
+   
+@receiver(post_save, sender=LoanRequest)
+def create_customer_loan(sender, instance, created, **kwargs):
+    if created:
+        interest = instance.amount_requested * 0.1 # calculate interest (10% of amount_requested)
+        customer_loan = CustomerLoan.objects.create(
+            user=instance.user,
+            total_loan=instance.amount_requested,
+            payable_loan=instance.amount_requested + interest
+        )
