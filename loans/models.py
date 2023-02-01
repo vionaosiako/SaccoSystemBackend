@@ -5,7 +5,7 @@ from django.utils.crypto import get_random_string
 # Create your models here.
 STATUS =(
     ("Approved", "Approved"),
-    ("Disapproved", "Disapproved"),
+    ("Rejected", "Rejected"),
     ("Pending", "Pending"),
     )
 

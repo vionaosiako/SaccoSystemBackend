@@ -68,8 +68,17 @@ def getLoanRequest(request):
         serializedData = LoanRequestSerializer(data = request.data)
         
         if serializedData.is_valid():
-            serializedData.save()
-            return Response(serializedData.data)
+            loan_request = serializedData.save()
+            user = loan_request.user
+            
+            if CustomerLoan.objects.filter(user=user).exists():
+                customer_loan = CustomerLoan.objects.get(user=user)
+                customer_loan.initial_loan = loan_request.amount_requested
+                customer_loan.save()
+            else:
+                customer_loan = CustomerLoan(user=user, initial_loan=loan_request.amount_requested)
+                customer_loan.save()
+    return Response(serializedData.data)
 
 @api_view(['GET','PUT','DELETE'])
 def getLoanRequestDetails(request,id):
@@ -149,7 +158,7 @@ def approved_request(request, id):
     speficLoanRequest.status_date = status_date
     speficLoanRequest.save()
     year = speficLoanRequest.payment_period_years
-
+    
     approved_user = LoanRequest.objects.get(id=id).user
     if CustomerLoan.objects.filter(user=approved_user).exists():
 
@@ -161,9 +170,9 @@ def approved_request(request, id):
 
         # update balance
         CustomerLoan.objects.filter(
-            user=approved_user).update(total_loan=int(PreviousAmount)+int(loan_obj.amount_requested))
+            user=approved_user).update(total_loan=int(PreviousAmount)+int(speficLoanRequest.amount_requested))
         CustomerLoan.objects.filter(
-            user=approved_user).update(payable_loan=int(PreviousPayable)+int(loan_obj.amount_requested)+int(loan_obj.amount_requested)*0.12*int(year))
+            user=approved_user).update(payable_loan=int(PreviousPayable)+int(speficLoanRequest.amount_requested)+int(speficLoanRequest.amount_requested)*0.12*int(year))
 
     else:
 
@@ -178,8 +187,8 @@ def approved_request(request, id):
             speficLoanRequest.amount_requested)+int(speficLoanRequest.amount_requested)*0.12*int(year)
         save_loan.save()
 
-    loanRequest.objects.filter(id=id).update(status='approved')
-    loanrequest = loanRequest.objects.filter(status='pending')
+    LoanRequest.objects.filter(id=id).update(status='approved')
+    loanrequest = LoanRequest.objects.filter(status='pending')
     # return render(request, 'admin/request_user.html', context={'loanrequest': loanrequest})
     return JsonResponse(context={'loanrequest': loanrequest})
 #-------------------------------------------------------------------------------------------------------------------------------------
@@ -188,16 +197,21 @@ def approved_request(request, id):
 
 def rejected_request(request, id):
 
+    speficLoanRequest = LoanRequest.objects.get(pk=id)
+    
     today = date.today()
     status_date = today.strftime("%B %d, %Y")
-    loan_obj = loanRequest.objects.get(id=id)
-    loan_obj.status_date = status_date
-    loan_obj.save()
+    speficLoanRequest.status_date = status_date
+    speficLoanRequest.save()
+    year = speficLoanRequest.payment_period_years
+    
     # rejected_customer = loanRequest.objects.get(id=id).customer
     # print(rejected_customer)
-    loanRequest.objects.filter(id=id).update(status='rejected')
-    loanrequest = loanRequest.objects.filter(status='pending')
-    return render(request, 'admin/request_user.html', context={'loanrequest': loanrequest})
+    LoanRequest.objects.filter(id=id).update(status='rejected')
+    loanrequest = LoanRequest.objects.filter(status='pending')
+    # return render(request, 'admin/request_user.html', context={'loanrequest': loanrequest})
+    return JsonResponse(context={'loanrequest': loanrequest})
+
 
 #-------------------------------------------------------------------------------------------------------------------------------------
 #Loan processes
