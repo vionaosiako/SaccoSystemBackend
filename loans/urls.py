@@ -8,4 +8,7 @@ urlpatterns = [
     path('loanrequest/<int:id>', getLoanRequestDetails,name='loanrequestDetails'),
     path('loanpayment/',getLoanPayment,name='loanpayment'),
     path('loanpayment/<int:id>', getLoanPaymentDetails,name='loanpaymentDetails'),
+    
+    path('getdashboard/', getDashboard),
+    # path('getloanapproved/<int:id>', approved_request)
 ]

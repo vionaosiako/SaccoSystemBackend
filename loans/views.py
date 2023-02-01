@@ -6,6 +6,9 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser # ima
 from .models import *
 from .serializers import *
 from authentication.models import User
+from django.http import JsonResponse
+from datetime import date
+
 
 # Create your views here.
 
@@ -57,7 +60,7 @@ def getLoanCategoryDetails(request,id):
 def getLoanRequest(request):
 
     if request.method == 'GET':
-        users=LoanRequest.objects.all()    
+        users=LoanRequest.objects.all()        
         serializedData=LoanRequestSerializer(instance=users, many=True)
         return Response(serializedData.data)
 
@@ -72,7 +75,14 @@ def getLoanRequest(request):
 def getLoanRequestDetails(request,id):
     speficLoanRequest = LoanRequest.objects.get(pk=id)
     
-    if request.method == 'GET':    
+    today = date.today()
+    status_date = today.strftime("%B %d, %Y")
+    # loan_obj = LoanRequest.objects.get(pk=id)
+    speficLoanRequest.status_date = status_date
+    speficLoanRequest.save()
+    year = speficLoanRequest.payment_period_years
+    
+    if request.method == 'GET':   
         serializedData=LoanRequestSerializer(speficLoanRequest)
         return Response(serializedData.data)
     
@@ -128,44 +138,96 @@ def getLoanPaymentDetails(request,id):
         return Response('Loan Payment Successfully Deleted!')
 
 #-------------------------------------------------------------------------------------------------------------------------------------
-#Loan Process
+#Loan approved
 #-------------------------------------------------------------------------------------------------------------------------------------
+@api_view(['GET','PUT','DELETE'])
 def approved_request(request, id):
+    speficLoanRequest = LoanRequest.objects.get(pk=id)
+    
+    today = date.today()
+    status_date = today.strftime("%B %d, %Y")
+    speficLoanRequest.status_date = status_date
+    speficLoanRequest.save()
+    year = speficLoanRequest.payment_period_years
+
+    approved_user = LoanRequest.objects.get(id=id).user
+    if CustomerLoan.objects.filter(user=approved_user).exists():
+
+        # find previous amount of user
+        PreviousAmount = CustomerLoan.objects.get(
+            user=approved_user).total_loan
+        PreviousPayable = CustomerLoan.objects.get(
+            user=approved_user).payable_loan
+
+        # update balance
+        CustomerLoan.objects.filter(
+            user=approved_user).update(total_loan=int(PreviousAmount)+int(loan_obj.amount_requested))
+        CustomerLoan.objects.filter(
+            user=approved_user).update(payable_loan=int(PreviousPayable)+int(loan_obj.amount_requested)+int(loan_obj.amount_requested)*0.12*int(year))
+
+    else:
+
+        # request user
+
+        # CustomerLoan object create
+        save_loan = CustomerLoan()
+
+        save_loan.customer = approved_user
+        save_loan.total_loan = int(speficLoanRequest.amount_requested)
+        save_loan.payable_loan = int(
+            speficLoanRequest.amount_requested)+int(speficLoanRequest.amount_requested)*0.12*int(year)
+        save_loan.save()
+
+    loanRequest.objects.filter(id=id).update(status='approved')
+    loanrequest = loanRequest.objects.filter(status='pending')
+    # return render(request, 'admin/request_user.html', context={'loanrequest': loanrequest})
+    return JsonResponse(context={'loanrequest': loanrequest})
+#-------------------------------------------------------------------------------------------------------------------------------------
+#Loan disapproved
+#-------------------------------------------------------------------------------------------------------------------------------------
+
+def rejected_request(request, id):
+
     today = date.today()
     status_date = today.strftime("%B %d, %Y")
     loan_obj = loanRequest.objects.get(id=id)
     loan_obj.status_date = status_date
     loan_obj.save()
-    year = loan_obj.year
-
-    approved_customer = loanRequest.objects.get(id=id).customer
-    if CustomerLoan.objects.filter(customer=approved_customer).exists():
-
-        # find previous amount of customer
-        PreviousAmount = CustomerLoan.objects.get(
-            customer=approved_customer).total_loan
-        PreviousPayable = CustomerLoan.objects.get(
-            customer=approved_customer).payable_loan
-
-        # update balance
-        CustomerLoan.objects.filter(
-            customer=approved_customer).update(total_loan=int(PreviousAmount)+int(loan_obj.amount))
-        CustomerLoan.objects.filter(
-            customer=approved_customer).update(payable_loan=int(PreviousPayable)+int(loan_obj.amount)+int(loan_obj.amount)*0.12*int(year))
-
-    else:
-
-        # request customer
-
-        # CustomerLoan object create
-        save_loan = CustomerLoan()
-
-        save_loan.customer = approved_customer
-        save_loan.total_loan = int(loan_obj.amount)
-        save_loan.payable_loan = int(
-            loan_obj.amount)+int(loan_obj.amount)*0.12*int(year)
-        save_loan.save()
-
-    loanRequest.objects.filter(id=id).update(status='approved')
+    # rejected_customer = loanRequest.objects.get(id=id).customer
+    # print(rejected_customer)
+    loanRequest.objects.filter(id=id).update(status='rejected')
     loanrequest = loanRequest.objects.filter(status='pending')
     return render(request, 'admin/request_user.html', context={'loanrequest': loanrequest})
+
+#-------------------------------------------------------------------------------------------------------------------------------------
+#Loan processes
+#-------------------------------------------------------------------------------------------------------------------------------------
+
+@api_view (['GET'])
+def getDashboard(request):
+    if request.method == 'GET':
+        totalCustomer = User.objects.all().count(),
+        # requestLoan = loanRequest.objects.all().filter(status='pending').count(),
+        # approved = loanRequest.objects.all().filter(status='approved').count(),
+        # rejected = loanRequest.objects.all().filter(status='rejected').count(),
+        # totalLoan = CustomerLoan.objects.aggregate(Sum('total_loan'))[
+        #     'total_loan__sum'],
+        # totalPayable = CustomerLoan.objects.aggregate(
+        #     Sum('payable_loan'))['payable_loan__sum'],
+        # totalPaid = loanTransaction.objects.aggregate(Sum('payment'))[
+        #     'payment__sum'],
+
+        dict = {
+            'totalCustomer': totalCustomer[0],
+            # 'request': requestLoan[0],
+            # 'approved': approved[0],
+            # 'rejected': rejected[0],
+            # 'totalLoan': totalLoan[0],
+            # 'totalPayable': totalPayable[0],
+            # 'totalPaid': totalPaid[0],
+
+        }
+        print(dict)
+
+    # return render(request, 'admin/dashboard.html', context=dict)
+    return JsonResponse(dict)

@@ -5,3 +5,4 @@ from .models import *
 admin.site.register(LoanRequest),
 admin.site.register(LoanPayment),
 admin.site.register(LoanCategory),
+admin.site.register(CustomerLoan),

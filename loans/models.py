@@ -18,16 +18,18 @@ class LoanCategory(models.Model):
         return self.loan_name
 class LoanRequest(models.Model):
     id =models.CharField(max_length=6, primary_key = True, editable=False, unique=True)
-    reg_number =  models.ForeignKey(User, on_delete=models.CASCADE)
+    user =  models.ForeignKey(User, on_delete=models.CASCADE)
     category = models.ForeignKey(LoanCategory, on_delete=models.CASCADE, null=True)
     amount_requested = models.IntegerField(default=0)
     purpose = models.TextField(null=True,blank=True)
     status = models.TextField(choices=STATUS, blank=False, default='Pending')
     payment_period_years = models.PositiveIntegerField(default=1)
     date_requested = models.DateField(auto_now_add=True,null=True,blank=True)
+    status_date = models.CharField(max_length=150, null=True, blank=True, default=None)
+    
     
     def __str__(self):
-        return self.reg_number.username
+        return self.user.username
     
     class Meta:
         verbose_name = "Loan Request"
@@ -41,7 +43,7 @@ class LoanPayment(models.Model):
     loan_id =  models.ForeignKey(LoanRequest, on_delete=models.CASCADE)
     amount_paid = models.IntegerField(default=0)
     date_paid = models.DateField(auto_now_add=True)
-    
+    # user = models.ForeignKey(User, on_delete=models.CASCADE, null=True,blank=True)
     def __str__(self):
         return self.loan_id.reg_number.username
     def save(self, *args, **kwargs):
