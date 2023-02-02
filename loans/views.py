@@ -20,13 +20,13 @@ from datetime import date
 def getLoanCategory(request):
 
     if request.method == 'GET':
-        users=LoanCategory.objects.all()    
+        users=LoanCategory.objects.all()
         serializedData=LoanCategorySerializer(instance=users, many=True)
         return Response(serializedData.data)
 
     if request.method == 'POST':
         serializedData = LoanCategorySerializer(data = request.data)
-        
+
         if serializedData.is_valid():
             serializedData.save()
             return Response(serializedData.data)
@@ -34,24 +34,24 @@ def getLoanCategory(request):
 @api_view(['GET','PUT','DELETE'])
 def getLoanCategoryDetails(request,id):
     speficLoanCategory = LoanCategory.objects.get(pk=id)
-    
-    if request.method == 'GET':    
+
+    if request.method == 'GET':
         serializedData=LoanCategorySerializer(speficLoanCategory)
         return Response(serializedData.data)
-    
+
     if request.method == 'PUT':
         serializedData = LoanCategorySerializer(data = request.data)
-        
+
         if serializedData.is_valid():
             serializedData.save()
             return Response(serializedData.data)
-    
+
     if request.method == 'DELETE':
         speficLoanCategory = LoanCategory.objects.get(pk=id)
         speficLoanCategory.delete()
         return Response('Loan Category Successfully Deleted!')
-    
-    
+
+
 #-------------------------------------------------------------------------------------------------------------------------------------
 #Loan Request
 #-------------------------------------------------------------------------------------------------------------------------------------
@@ -60,48 +60,40 @@ def getLoanCategoryDetails(request,id):
 def getLoanRequest(request):
 
     if request.method == 'GET':
-        users=LoanRequest.objects.all()        
+        users=LoanRequest.objects.all()
         serializedData=LoanRequestSerializer(instance=users, many=True)
         return Response(serializedData.data)
 
     if request.method == 'POST':
         serializedData = LoanRequestSerializer(data = request.data)
-        
+
         if serializedData.is_valid():
-            loan_request = serializedData.save()
-            user = loan_request.user
-            
-            if CustomerLoan.objects.filter(user=user).exists():
-                customer_loan = CustomerLoan.objects.get(user=user)
-                customer_loan.initial_loan = loan_request.amount_requested
-                customer_loan.save()
-            else:
-                customer_loan = CustomerLoan(user=user, initial_loan=loan_request.amount_requested)
-                customer_loan.save()
-    return Response(serializedData.data)
+            serializedData.save()
+
+        return Response(serializedData.data)
 
 @api_view(['GET','PUT','DELETE'])
 def getLoanRequestDetails(request,id):
     speficLoanRequest = LoanRequest.objects.get(pk=id)
-    
+
     today = date.today()
     status_date = today.strftime("%B %d, %Y")
     # loan_obj = LoanRequest.objects.get(pk=id)
     speficLoanRequest.status_date = status_date
     speficLoanRequest.save()
     year = speficLoanRequest.payment_period_years
-    
-    if request.method == 'GET':   
+
+    if request.method == 'GET':
         serializedData=LoanRequestSerializer(speficLoanRequest)
         return Response(serializedData.data)
-    
+
     if request.method == 'PUT':
         serializedData = LoanRequestSerializer(data = request.data)
-        
+
         if serializedData.is_valid():
             serializedData.save()
             return Response(serializedData.data)
-    
+
     if request.method == 'DELETE':
         speficLoanRequest = LoanRequest.objects.get(pk=id)
         speficLoanRequest.delete()
@@ -115,13 +107,13 @@ def getLoanRequestDetails(request,id):
 def getLoanPayment(request):
 
     if request.method == 'GET':
-        users=LoanPayment.objects.all()    
+        users=LoanPayment.objects.all()
         serializedData=LoanPaymentSerializer(instance=users, many=True)
         return Response(serializedData.data)
 
     if request.method == 'POST':
         serializedData = LoanPaymentSerializer(data = request.data)
-        
+
         if serializedData.is_valid():
             serializedData.save()
             return Response(serializedData.data)
@@ -129,18 +121,18 @@ def getLoanPayment(request):
 @api_view(['GET','PUT','DELETE'])
 def getLoanPaymentDetails(request,id):
     speficLoanPayment = LoanPayment.objects.get(pk=id)
-    
-    if request.method == 'GET':    
+
+    if request.method == 'GET':
         serializedData=LoanPaymentSerializer(speficLoanPayment)
         return Response(serializedData.data)
-    
+
     if request.method == 'PUT':
         serializedData = LoanPaymentSerializer(data = request.data)
-        
+
         if serializedData.is_valid():
             serializedData.save()
             return Response(serializedData.data)
-    
+
     if request.method == 'DELETE':
         speficLoanPayment = LoanPayment.objects.get(pk=id)
         speficLoanPayment.delete()
@@ -152,21 +144,20 @@ def getLoanPaymentDetails(request,id):
 @api_view(['GET','PUT','DELETE'])
 def approved_request(request, id):
     speficLoanRequest = LoanRequest.objects.get(pk=id)
-    
+
     today = date.today()
     status_date = today.strftime("%B %d, %Y")
     speficLoanRequest.status_date = status_date
     speficLoanRequest.save()
     year = speficLoanRequest.payment_period_years
-    
-    approved_user = LoanRequest.objects.get(id=id).user
-    if CustomerLoan.objects.filter(user=approved_user).exists():
 
+    approved_user = LoanRequest.objects.get(id=id).user
+    customer_loan = CustomerLoan.objects.filter(user=approved_user).first()
+
+    if customer_loan:
         # find previous amount of user
-        PreviousAmount = CustomerLoan.objects.get(
-            user=approved_user).total_loan
-        PreviousPayable = CustomerLoan.objects.get(
-            user=approved_user).payable_loan
+        PreviousAmount = customer_loan.total_loan
+        PreviousPayable = customer_loan.payable_loan
 
         # update balance
         CustomerLoan.objects.filter(
@@ -189,8 +180,12 @@ def approved_request(request, id):
 
     LoanRequest.objects.filter(id=id).update(status='approved')
     loanrequest = LoanRequest.objects.filter(status='pending')
+    serializedData=LoanRequestSerializer(instance=loanrequest, many=True)
+
     # return render(request, 'admin/request_user.html', context={'loanrequest': loanrequest})
-    return JsonResponse(context={'loanrequest': loanrequest})
+    return JsonResponse(serializedData.data, safe=False)
+
+
 #-------------------------------------------------------------------------------------------------------------------------------------
 #Loan disapproved
 #-------------------------------------------------------------------------------------------------------------------------------------
@@ -198,13 +193,13 @@ def approved_request(request, id):
 def rejected_request(request, id):
 
     speficLoanRequest = LoanRequest.objects.get(pk=id)
-    
+
     today = date.today()
     status_date = today.strftime("%B %d, %Y")
     speficLoanRequest.status_date = status_date
     speficLoanRequest.save()
     year = speficLoanRequest.payment_period_years
-    
+
     # rejected_customer = loanRequest.objects.get(id=id).customer
     # print(rejected_customer)
     LoanRequest.objects.filter(id=id).update(status='rejected')
