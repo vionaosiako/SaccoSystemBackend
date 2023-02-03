@@ -8,6 +8,7 @@ from .serializers import *
 from authentication.models import User
 from django.http import JsonResponse
 from datetime import date
+from django.db.models import Sum
 
 
 # Create your views here.
@@ -153,6 +154,8 @@ def approved_request(request, id):
 
     approved_user = LoanRequest.objects.get(id=id).user
     customer_loan = CustomerLoan.objects.filter(user=approved_user).first()
+    loanrequest = LoanRequest.objects.filter(status='pending')
+
 
     if customer_loan:
         # find previous amount of user
@@ -165,25 +168,12 @@ def approved_request(request, id):
         CustomerLoan.objects.filter(
             user=approved_user).update(payable_loan=int(PreviousPayable)+int(speficLoanRequest.amount_requested)+int(speficLoanRequest.amount_requested)*0.12*int(year))
 
-    else:
+        LoanRequest.objects.filter(id=id).update(status='approved')
+        serializedData=LoanRequestSerializer(instance=loanrequest, many=True)
 
-        # request user
+        return JsonResponse(serializedData.data, safe=False)
+    # return JsonResponse( context={'loanrequest': loanrequest})
 
-        # CustomerLoan object create
-        save_loan = CustomerLoan()
-
-        save_loan.customer = approved_user
-        save_loan.total_loan = int(speficLoanRequest.amount_requested)
-        save_loan.payable_loan = int(
-            speficLoanRequest.amount_requested)+int(speficLoanRequest.amount_requested)*0.12*int(year)
-        save_loan.save()
-
-    LoanRequest.objects.filter(id=id).update(status='approved')
-    loanrequest = LoanRequest.objects.filter(status='pending')
-    serializedData=LoanRequestSerializer(instance=loanrequest, many=True)
-
-    # return render(request, 'admin/request_user.html', context={'loanrequest': loanrequest})
-    return JsonResponse(serializedData.data, safe=False)
 
 
 #-------------------------------------------------------------------------------------------------------------------------------------
@@ -200,12 +190,12 @@ def rejected_request(request, id):
     speficLoanRequest.save()
     year = speficLoanRequest.payment_period_years
 
-    # rejected_customer = loanRequest.objects.get(id=id).customer
-    # print(rejected_customer)
     LoanRequest.objects.filter(id=id).update(status='rejected')
     loanrequest = LoanRequest.objects.filter(status='pending')
+    serializedData=LoanRequestSerializer(instance=loanrequest, many=True)
+
     # return render(request, 'admin/request_user.html', context={'loanrequest': loanrequest})
-    return JsonResponse(context={'loanrequest': loanrequest})
+    return JsonResponse(serializedData.data, safe=False)
 
 
 #-------------------------------------------------------------------------------------------------------------------------------------
@@ -216,23 +206,20 @@ def rejected_request(request, id):
 def getDashboard(request):
     if request.method == 'GET':
         totalCustomer = User.objects.all().count(),
-        # requestLoan = loanRequest.objects.all().filter(status='pending').count(),
-        # approved = loanRequest.objects.all().filter(status='approved').count(),
-        # rejected = loanRequest.objects.all().filter(status='rejected').count(),
-        # totalLoan = CustomerLoan.objects.aggregate(Sum('total_loan'))[
-        #     'total_loan__sum'],
-        # totalPayable = CustomerLoan.objects.aggregate(
-        #     Sum('payable_loan'))['payable_loan__sum'],
-        # totalPaid = loanTransaction.objects.aggregate(Sum('payment'))[
-        #     'payment__sum'],
+        requestLoan = LoanRequest.objects.all().filter(status='pending').count(),
+        approved = LoanRequest.objects.all().filter(status='approved').count(),
+        rejected = LoanRequest.objects.all().filter(status='rejected').count(),
+        totalLoan = CustomerLoan.objects.aggregate(Sum('total_loan'))['total_loan__sum'],
+        totalPayable = CustomerLoan.objects.aggregate(Sum('payable_loan'))['payable_loan__sum'],
+        # totalPaid = LoanPayment.objects.aggregate(Sum('amount_paid'))['amount_paid__sum'],
 
         dict = {
             'totalCustomer': totalCustomer[0],
-            # 'request': requestLoan[0],
-            # 'approved': approved[0],
-            # 'rejected': rejected[0],
-            # 'totalLoan': totalLoan[0],
-            # 'totalPayable': totalPayable[0],
+            'request': requestLoan[0],
+            'approved': approved[0],
+            'rejected': rejected[0],
+            'totalLoan': totalLoan[0],
+            'totalPayable': totalPayable[0],
             # 'totalPaid': totalPaid[0],
 
         }

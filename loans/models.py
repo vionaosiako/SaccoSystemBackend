@@ -58,12 +58,13 @@ class LoanPayment(models.Model):
 
 class CustomerLoan(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='loan_user')
+    loan_id = models.ForeignKey(LoanRequest, on_delete=models.CASCADE, null=True, blank=True)
     total_loan = models.PositiveIntegerField(default=0)
     payable_loan = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return self.user.username
-   
+
 @receiver(post_save, sender=LoanRequest)
 def create_customer_loan(sender, instance, created, **kwargs):
     if created:
