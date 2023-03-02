@@ -4,6 +4,8 @@ from rest_framework import routers
 from .views import UserViewSet
 routes = routers.DefaultRouter()
 
+# routes.register('monthlycontribution', MonthlyContributionViewSet)
+# routes.register('merrygoroundcontribution', MonthlyContributionViewSet)
 # routes.register('api/redflags', RedFlagViewSet)
 # routes.register('api/interventions', InterventionViewSet)
 routes.register('api/users', UserViewSet)
