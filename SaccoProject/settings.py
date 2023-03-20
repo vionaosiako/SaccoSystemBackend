@@ -86,7 +86,7 @@ WSGI_APPLICATION = 'SaccoProject.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'saccovee',
+        'NAME': 'harmonysisters',
         'USER': 'riziki',
         'PASSWORD':'riziki',
     }
