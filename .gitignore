@@ -1,1 +1,3 @@
 /virtualharmorysisters
+*.pyc
+*__pycache__
