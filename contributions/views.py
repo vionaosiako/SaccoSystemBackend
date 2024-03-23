@@ -23,26 +23,30 @@ from authentication.models import User
 
 #     return Response(serializedData.data)
 
-@api_view (['GET','POST'])
+@api_view(['GET', 'POST'])
 def getMonthlyContribution(request):
-
     if request.method == 'GET':
-        users=MonthlyContribution.objects.all()    
-        serializedData=MonthlyContributionSerializer(instance=users, many=True)
-        
+        users = MonthlyContribution.objects.all()
+        serializedData = MonthlyContributionSerializer(instance=users, many=True)
+
         for value in serializedData.data:
-            user=User.objects.filter(id=value['reg_number']).first()
-            # print(user)
-            value['first_name']=user.first_name
-            value['last_name']=user.last_name
+            user = User.objects.filter(id=value['reg_number']).first()
+            value['first_name'] = user.first_name
+            value['last_name'] = user.last_name
+
         return Response(serializedData.data)
 
-    if request.method == 'POST':
-        serializedData = MonthlyContributionSerializer(data = request.data)
-        
+    elif request.method == 'POST':
+        serializedData = MonthlyContributionSerializer(data=request.data)
+
         if serializedData.is_valid():
             serializedData.save()
             return Response(serializedData.data)
+        else:
+            return Response({'error': 'Invalid data'}, status=400)
+
+    else:
+        return Response({'error': 'Method not allowed'}, status=405)
 
 @api_view(['GET','PUT','DELETE'])
 def getMonthlyContributionDetails(request,id):

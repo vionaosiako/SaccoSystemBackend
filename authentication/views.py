@@ -1,5 +1,7 @@
 from django.shortcuts import render
 from rest_framework import generics
+
+from utils.paginator import CustomPaginator
 from .serializers import ClientSerializer, UserSerializer, AdminSerializer
 from rest_framework.authtoken.models import Token
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -75,4 +77,23 @@ class UserViewSet(viewsets.ModelViewSet):
     """
     queryset = models.User.objects.all().order_by('-date_joined')
     serializer_class = UserSerializer
+    pagination_class = CustomPaginator  # Use your custom paginator
+
+    def list(self, request, *args, **kwargs):
+        try:
+            queryset = self.filter_queryset(self.get_queryset())
+            page = self.paginate_queryset(queryset)
+
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                return self.paginator.get_paginated_response(serializer.data)
+
+            serializer = self.get_serializer(queryset, many=True)
+            return Response(serializer.data)
+        except Exception as e:
+            return Response({
+                'status': False,
+                'message': 'Error retrieving users',
+                "error": str(e)
+            })
 
